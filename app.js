@@ -4,6 +4,7 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose'); // 加载mongoose模块（需要安装）
 var _underscore = require('underscore'); // _.extend用新对象里的字段替换老的字段（需要安装）
 var movie = require('./models/movie.js'); // 载入mongoose编译后的模型movie
+var User = require('./models/user.js'); // 载入mongoose编译后的模型user
 
 var app = express();
 
@@ -37,6 +38,42 @@ app.get('/', function (req, res) {
         res.render('index', {
             title: '首页',
             movies: movies
+        })
+    })
+});
+
+// 注册
+app.post('/user/signup', function (req, res) {
+    var _user = req.body.user;
+
+    User.findOne({name: _user.name},  function(err, user) { //这里的user大小写之间产生了迷之影响
+        if (err) {
+            console.log(err)
+        }
+        if (user) {
+            return res.redirect('/')
+        }
+        else {
+            var user = new User(_user)
+            user.save(function(err) {
+                if (err) {
+                    console.log(err)
+                }
+                res.redirect('/admin/userlist')
+            })
+        }
+    })
+});
+
+// userlist列表页
+app.get('/admin/userlist', function (req, res) {
+    User.fetch(function (err, users) {
+        if (err) {
+            console.log(err);
+        }
+        res.render('userlist', {
+            title: '用户列表页',
+            users: users
         })
     })
 });
